@@ -91,16 +91,16 @@ $ operator-sdk add controller --api-version=binliuk.com/v1alpha1 --kind=Sample
 
 6. Build and push the Operator image to a reqistry.
 ~~~
-$ operator-sdk build quay.io/binliuk/sample-operator:v0.1 --image-builder podman
+$operator-sdk build default-route-openshift-image-registry.apps.osdtest1.h7z8.p2.openshiftapps.com/test/sample-operator:v0.0.1
 
 //Verify the operator image cretaed locally
-[root@shsingh sample-operator]# podman images
-REPOSITORY                                                TAG      IMAGE ID       CREATED          SIZE
-quay.io/binliuk/sample-operator                     v0.1     50fceb91c078   27 seconds ago   150 MB
+lbin@lbin-ThinkPad-W530:~/go/src/github.com/binliuk/sample-operator$ docker images
+REPOSITORY                                                                                            TAG                 IMAGE ID            CREATED             SIZE
+default-route-openshift-image-registry.apps.osdtest1.h7z8.p2.openshiftapps.com/test/sample-operator   v0.0.1              d25097cb8055        About an hour ago   185MB
 
 // Push the image
-
-$ podman push quay.io/binliuk/sample-operator:v0.1
+$ docker login -u `oc whoami` -p `oc whoami -t` default-route-openshift-image-registry.apps.osdtest1.h7z8.p2.openshiftapps.com
+$ docker push default-route-openshift-image-registry.apps.osdtest1.h7z8.p2.openshiftapps.com/test/sample-operator
 ~~~
 
 7. Update the default `deploy/operator.yaml` with the correct image deatils
@@ -109,7 +109,7 @@ serviceAccountName: sample-operator
 containers:
   - name: sample-operator
     # Replace this with the built image name
-    image: quay.io/binliuk/sample-operator:v0.1
+    image: image-registry.opernshift-image-registry.svc:5000/test/sample-operator:v0.0.1 
     command:
     - sample-operator
     imagePullPolicy: Always
@@ -138,26 +138,21 @@ $ oc create -f deploy/operator.yaml
 4. Verify the deployment and logs
 ~~~
 $ oc get all
-NAME                                   READY     STATUS    RESTARTS   AGE
-pod/sample-operator-867cf7c68f-jpjxk   1/1       Running   0          95s
+NAME                                  READY   STATUS    RESTARTS   AGE
+pod/sample-operator-8f4667bd-zj5d2    1/1     Running   0          47m
 
-NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-service/sample-operator-metrics   ClusterIP   172.30.125.171   <none>        8383/TCP,8686/TCP   76s
+NAME                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/sample-operator-metrics   ClusterIP   172.30.82.158   <none>        8383/TCP,8686/TCP   47m
 
-NAME                              READY     UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/sample-operator   1/1       1            1           97s
+NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/sample-operator   1/1     1            1           49m
 
-NAME                                         DESIRED   CURRENT   READY     AGE
-replicaset.apps/sample-operator-867cf7c68f   1         1         1         97s
+NAME                                         DESIRED   CURRENT   READY   AGE
+replicaset.apps/sample-operator-8f4667bd     1         1         1       47m
 
-//Operator logs
-{"level":"info","ts":1585146465.5662885,"logger":"metrics","msg":"Metrics Service object created","Service.Name":"sample-operator-metrics","Service.Namespace":"sample-operator"}
-{"level":"info","ts":1585146468.5416582,"logger":"cmd","msg":"Starting the Cmd."}
-{"level":"info","ts":1585146468.5419788,"logger":"controller-runtime.manager","msg":"starting metrics server","path":"/metrics"}
-{"level":"info","ts":1585146468.5421832,"logger":"controller-runtime.controller","msg":"Starting EventSource","controller":"sample-controller","source":"kind source: /, Kind="}
-{"level":"info","ts":1585146468.6432557,"logger":"controller-runtime.controller","msg":"Starting EventSource","controller":"sample-controller","source":"kind source: /, Kind="}
-{"level":"info","ts":1585146468.743742,"logger":"controller-runtime.controller","msg":"Starting Controller","controller":"sample-controller"}
-{"level":"info","ts":1585146468.7437823,"logger":"controller-runtime.controller","msg":"Starting workers","controller":"sample-controller","worker count":1}
+NAME                                             IMAGE REPOSITORY                                                                                      TAGS     UPDATED
+imagestream.image.openshift.io/sample-operator   default-route-openshift-image-registry.apps.osdtest1.h7z8.p2.openshiftapps.com/test/sample-operator   v0.0.1   53 minutes ago
+
 ~~~
 
 5. Create the Sample Custom Resource(CR)
@@ -183,15 +178,16 @@ sample.binliuk.com/example-sample created
 6. Verify the application deployemnet and POD has been created.
 ~~~
 $ oc get deployment
-NAME              READY     UP-TO-DATE   AVAILABLE   AGE
-example-sample    2/2       2            2           4m8s
-sample-operator   1/1       1            1           10m
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+example-sample    2/2     2            2           43m
+sample-operator   1/1     1            1           51m
 
 $ oc get pods
-NAME                               READY     STATUS    RESTARTS   AGE
-example-sample-7d856cb9fc-7pbg2    1/1       Running   0          3m29s
-example-sample-7d856cb9fc-bjg47    1/1       Running   0          3m29s
-sample-operator-867cf7c68f-jpjxk   1/1       Running   0          10m
+NAME                              READY   STATUS    RESTARTS   AGE
+example-sample-56d56cdd67-bgrf9   1/1     Running   0          44m
+example-sample-56d56cdd67-txlwp   1/1     Running   0          44m
+nginx                             1/1     Running   12         12h
+sample-operator-8f4667bd-zj5d2    1/1     Running   0          50m
 
 $ oc get samples
 NAME             AGE
@@ -206,10 +202,10 @@ $ oc expose svc/sample
 
 8. Test the Application
 ~~~
-$ curl http://sample-sampleoperator.apps.lab.com/test
+$ curl http://sample-test.apps.osdtest1.h7z8.p2.openshiftapps.com/test
 Response received from POD : example-sample-7d856cb9fc-7pbg2
 
-$ curl http://sample-sampleoperator.apps.lab.com/test
+$ curl http://sample-test.apps.osdtest1.h7z8.p2.openshiftapps.com/test
 Response received from POD : example-sample-7d856cb9fc-bjg47
 ~~~
 
