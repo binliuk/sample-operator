@@ -1,0 +1,9 @@
+apiVersion: binliuk.com/v1alpha1
+kind: Sample
+metadata:
+  name: example-sample
+spec:
+  # Add fields here
+  size: 2
+  bodyvalue: "operator test pod : {{env:HOSTNAME}}"
+  image: "quay.io/shailendra14k/sample:v0.1"
