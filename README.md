@@ -234,3 +234,65 @@ Finally, you can delete the namespace using the command
 $ oc delete project sample-operator
 ~~~
 
+## Manage the sample-operator using the Operator Lifecycle Manager
+Prerequisites
+OLM installed on a Kubernetes-based cluster (v1.8 or above to support the apps/v1beta2 API group), for example OpenShift Container Platform 4.4 Preview OLM enabled
+
+Memcached Operator built
+
+1. Generate an Operator manifest
+~~~
+$ operator-sdk generate csv --csv-version 0.0.1
+~~~
+
+2. Create an OperatorGroup that specifies the namespaces that the Operator will target.
+~~~
+$ cat <<EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: memcached-operator-group
+  namespace: operator-sample
+spec:
+  targetNamespaces:
+  - operator-sample
+EOF
+~~~
+
+3. Deploy the Operator
+~~~
+$ oc create -f deploy/crds/binliuk.com_samples_crd.yaml
+$ oc create -f deploy/service_account.yaml
+$ oc create -f deploy/role.yaml
+$ oc create -f deploy/role_binding.yaml
+$ oc apply -f deploy/olm-catalog/sample-operator/0.0.1/sample-operator.v0.0.1.clusterserviceversion.yaml
+~~~
+
+4. Create an application instance.
+~~~
+$ cat <<EOF | oc apply -f -
+apiVersion: binliuk.com/v1alpha1
+kind: Sample
+metadata:
+  name: example-sample
+spec:
+  # Add fields here
+  size: 2
+  bodyvalue: "Response received from POD : {{env:HOSTNAME}}"
+  image: "quay.io/shailendra14k/sample:v0.1"
+EOF
+~~~
+
+5. Check pods
+~~~
+$ oc get pod
+NAME                               READY   STATUS    RESTARTS   AGE
+example-sample-7d856cb9fc-c9bl7    1/1     Running   0          13m
+example-sample-7d856cb9fc-qj6jw    1/1     Running   0          13m
+sample-operator-665fdd6d79-rkzn5   1/1     Running   0          19m
+$ oc get sample
+NAME             AGE
+example-sample   13m
+
+~~~
+ 
