@@ -235,11 +235,14 @@ $ oc delete project sample-operator
 ~~~
 
 ## Manage the sample-operator using the Operator Lifecycle Manager
-Prerequisites
+
+#Prerequisites
+
 OLM installed on a Kubernetes-based cluster (v1.8 or above to support the apps/v1beta2 API group), for example OpenShift Container Platform 4.4 Preview OLM enabled
 
-Memcached Operator built
+Sample Operator built
 
+#Procedure
 1. Generate an Operator manifest
 ~~~
 $ operator-sdk generate csv --csv-version 0.0.1
