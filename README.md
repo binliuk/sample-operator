@@ -168,7 +168,7 @@ spec:
   # Add fields here
   size: 2
   bodyvalue: "Response received from POD : {{env:HOSTNAME}}"
-  image: "quay.io/binliuk/sample:v0.1"
+  image: "quay.io/shailendra14k/sample:v0.1"
 ~~~
 ~~~
 $ oc create -f deploy/crds/binliuk.com_v1alpha1_sample_cr.yaml 
@@ -219,7 +219,7 @@ spec:
   # Add fields here
   size: 1
   bodyvalue: "Response received from POD : {{env:HOSTNAME}}"
-  image: "quay.io/binliuk/sample:v0.1"
+  image: "quay.io/shailendra14k/sample:v0.1"
 ~~~
 ~~~
 $ oc apply -f deploy/crds/binliuk.com_v1alpha1_sample_cr.yaml
